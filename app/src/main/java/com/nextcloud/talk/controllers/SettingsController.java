@@ -28,6 +28,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.preference.SwitchPreference;
 import android.security.KeyChain;
 import android.text.TextUtils;
 import android.util.Log;
@@ -40,6 +41,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.view.ViewCompat;
 import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
@@ -160,6 +162,9 @@ public class SettingsController extends BaseController {
     @BindView(R.id.settings_screen_lock_timeout)
     MaterialChoicePreference screenLockTimeoutChoicePreference;
 
+    @BindView(R.id.settings_theme)
+    MaterialSwitchPreference themeSwitchPreference;
+
     @BindView(R.id.message_text)
     TextView messageText;
 
@@ -186,6 +191,7 @@ public class SettingsController extends BaseController {
     private OnPreferenceValueChangedListener<Boolean> screenSecurityChangeListener;
     private OnPreferenceValueChangedListener<Boolean> screenLockChangeListener;
     private OnPreferenceValueChangedListener<String> screenLockTimeoutChangeListener;
+    private OnPreferenceValueChangedListener<String> themeChangeListener;
 
     private Disposable profileQueryDisposable;
     private Disposable dbQueryDisposable;
@@ -746,6 +752,20 @@ public class SettingsController extends BaseController {
 
                 showProxySettings();
             }
+        }
+    }
+
+    private class ThemeChangeListener implements OnPreferenceValueChangedListener<Boolean> {
+        @Override
+        public void onChanged(Boolean newValue) {
+            if (newValue) {
+                themeSwitchPreference.setSummary(getActivity().getString(R.string.nc_settings_theme_dark));
+            } else {
+                themeSwitchPreference.setSummary(getActivity().getString(R.string.nc_settings_theme_light));
+            }
+
+            NextcloudTalkApplication.setAppTheme(newValue);
+            getActivity().recreate();
         }
     }
 }

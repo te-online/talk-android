@@ -146,6 +146,23 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:animateLayoutChanges="true"
+        apc:mpc_title="@string/nc_settings_appearance"
+        apc:mpc_title_color="@color/colorPrimary">
+
+        <com.yarolegovich.mp.MaterialSwitchPreference
+            android:id="@+id/settings_theme"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            apc:mp_default_value="@bool/value_false"
+            apc:mp_key="@string/nc_settings_theme_key"
+            apc:mp_title="@string/nc_settings_theme_title" />
+
+    </com.yarolegovich.mp.MaterialPreferenceCategory>
+
+    <com.yarolegovich.mp.MaterialPreferenceCategory
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:animateLayoutChanges="true"
         apc:mpc_title="@string/nc_settings_privacy"
         apc:mpc_title_color="@color/colorPrimary">
 
@@ -155,7 +172,8 @@
             android:layout_height="wrap_content"
             apc:mp_default_value="@bool/value_false"
             apc:mp_key="@string/nc_settings_screen_lock_key"
-            apc:mp_title="@string/nc_settings_screen_lock_title" />
+            apc:mp_title="@string/nc_settings_screen_lock_title"
+            apc:mp_summary="@string/nc_settings_theme_light"/>
 
         <com.yarolegovich.mp.MaterialChoicePreference
             android:id="@+id/settings_screen_lock_timeout"
