@@ -21,13 +21,9 @@
 package com.nextcloud.talk.activities
 
 import android.app.KeyguardManager
-import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.content.pm.ShortcutInfo
 import android.content.pm.ShortcutManager
-import android.graphics.drawable.Icon
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.view.ViewGroup
@@ -43,17 +39,20 @@ import com.bluelinelabs.conductor.changehandler.VerticalChangeHandler
 import com.google.android.material.appbar.MaterialToolbar
 import com.nextcloud.talk.R
 import com.nextcloud.talk.application.NextcloudTalkApplication
-import com.nextcloud.talk.controllers.*
+import com.nextcloud.talk.controllers.CallNotificationController
+import com.nextcloud.talk.controllers.ContactsController
+import com.nextcloud.talk.controllers.LockedController
+import com.nextcloud.talk.controllers.ServerSelectionController
 import com.nextcloud.talk.controllers.base.providers.ActionBarProvider
 import com.nextcloud.talk.newarch.features.conversationsList.ConversationsListView
 import com.nextcloud.talk.utils.ConductorRemapping
 import com.nextcloud.talk.utils.SecurityUtils
+import com.nextcloud.talk.utils.ShortcutService
 import com.nextcloud.talk.utils.bundle.BundleKeys
 import com.nextcloud.talk.utils.database.user.UserUtils
 import io.requery.Persistable
 import io.requery.android.sqlcipher.SqlCipherDatabaseSource
 import io.requery.reactivex.ReactiveEntityStore
-import java.util.*
 import javax.inject.Inject
 
 @AutoInjector(NextcloudTalkApplication::class)
@@ -127,39 +126,18 @@ class MainActivity : BaseActivity(), ActionBarProvider {
       }
     }
 
-    val shortcutManager = getSystemService<ShortcutManager>(ShortcutManager::class.java)
-
-    val notificationIntent = Intent(this, MainActivity::class.java)
-    notificationIntent.action = BundleKeys.KEY_NEW_CONVERSATION
-    notificationIntent.putExtra ("new", true)
-    // val contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT)
-
-    val shortcut = ShortcutInfo.Builder(context, "new")
-            .setShortLabel("New")
-            .setLongLabel("New conversation")
-            .setIcon(Icon.createWithResource(context, R.drawable.accent_circle))
-            .setIntent(notificationIntent)
-            .build()
-
-    shortcutManager!!.dynamicShortcuts = Arrays.asList(shortcut)
-
-    router = Conductor.attachRouter(this, container, savedInstanceState)
+    val shortcutService = ShortcutService(
+            getSystemService<ShortcutManager>(ShortcutManager::class.java),
+            context,
+            this
+            //this.offlineRepository
+    );
+    shortcutService.registerShortcuts()
 
     val startingIntent : Intent? = intent
     if(startingIntent?.extras != null){
       openNewConversationScreen()
     }
-  }
-
-  private fun openNewConversationScreen() {
-    val bundle = Bundle()
-    bundle.putBoolean(BundleKeys.KEY_NEW_CONVERSATION, true)
-
-    router?.pushController(
-            RouterTransaction.with(ContactsController(bundle))
-                    .pushChangeHandler(HorizontalChangeHandler())
-                    .popChangeHandler(HorizontalChangeHandler())
-    )
   }
 
   override fun onStart() {
@@ -213,6 +191,17 @@ class MainActivity : BaseActivity(), ActionBarProvider {
     if (!router!!.handleBack()) {
       super.onBackPressed()
     }
+  }
+
+  private fun openNewConversationScreen() {
+    val bundle = Bundle()
+    bundle.putBoolean(BundleKeys.KEY_NEW_CONVERSATION, true)
+
+    router?.pushController(
+            RouterTransaction.with(ContactsController(bundle))
+                    .pushChangeHandler(HorizontalChangeHandler())
+                    .popChangeHandler(HorizontalChangeHandler())
+    )
   }
 
   companion object {
