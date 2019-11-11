@@ -22,6 +22,7 @@ package com.nextcloud.talk.newarch.features.conversationsList
 
 import android.app.SearchManager
 import android.content.Context
+import android.content.pm.ShortcutManager
 import android.graphics.drawable.Drawable
 import android.os.Build
 import android.os.Bundle
@@ -35,6 +36,7 @@ import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.SearchView.OnQueryTextListener
+import androidx.core.content.ContextCompat.getSystemService
 import androidx.core.view.MenuItemCompat
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
@@ -65,6 +67,7 @@ import com.nextcloud.talk.newarch.utils.ViewState.LOADING
 import com.nextcloud.talk.utils.ApiUtils
 import com.nextcloud.talk.utils.ConductorRemapping
 import com.nextcloud.talk.utils.DisplayUtils
+import com.nextcloud.talk.utils.ShortcutService
 import com.nextcloud.talk.utils.animations.SharedElementTransition
 import com.nextcloud.talk.utils.bundle.BundleKeys
 import eu.davidea.flexibleadapter.FlexibleAdapter
@@ -316,6 +319,14 @@ class ConversationsListView : BaseView(), OnQueryTextListener,
         settingsItem?.icon = it
       })
     }
+
+    val shortcutService = ShortcutService(
+            context.getSystemService<ShortcutManager>(ShortcutManager::class.java),
+            context,
+            this
+            //this.offlineRepository
+    );
+    shortcutService.registerShortcuts()
 
     return super.onCreateView(inflater, container)
   }
