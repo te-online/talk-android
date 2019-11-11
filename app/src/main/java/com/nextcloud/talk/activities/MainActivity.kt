@@ -23,7 +23,6 @@ package com.nextcloud.talk.activities
 import android.app.KeyguardManager
 import android.content.Context
 import android.content.Intent
-import android.content.pm.ShortcutManager
 import android.os.Build
 import android.os.Bundle
 import android.view.ViewGroup
@@ -47,7 +46,6 @@ import com.nextcloud.talk.controllers.base.providers.ActionBarProvider
 import com.nextcloud.talk.newarch.features.conversationsList.ConversationsListView
 import com.nextcloud.talk.utils.ConductorRemapping
 import com.nextcloud.talk.utils.SecurityUtils
-import com.nextcloud.talk.utils.ShortcutService
 import com.nextcloud.talk.utils.bundle.BundleKeys
 import com.nextcloud.talk.utils.database.user.UserUtils
 import io.requery.Persistable
@@ -125,14 +123,6 @@ class MainActivity : BaseActivity(), ActionBarProvider {
 
       }
     }
-
-    val shortcutService = ShortcutService(
-            getSystemService<ShortcutManager>(ShortcutManager::class.java),
-            context,
-            this
-            //this.offlineRepository
-    );
-    shortcutService.registerShortcuts()
 
     val startingIntent : Intent? = intent
     if(startingIntent?.extras != null){
