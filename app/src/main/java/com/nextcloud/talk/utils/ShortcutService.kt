@@ -1,8 +1,9 @@
 /*
  * Nextcloud Talk application
  *
- * @author Thomas Ebert
- * Copyright (C) 2017-2019 Thomas Ebert <thomas@thomasebert.net>
+ * @author Thomas Ebert<thomas@thomasebert.net>
+ * @author Mario Danic
+ * Copyright (C) 2017-2019 Mario Danic <mario@lovelyhq.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,7 +28,6 @@ import android.content.pm.ShortcutInfo
 import android.content.pm.ShortcutManager
 import android.graphics.drawable.Icon
 import android.os.Build
-import android.util.Log
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.nextcloud.talk.R
@@ -46,7 +46,7 @@ class ShortcutService constructor(
     private var shortcuts: MutableList<ShortcutInfo> = ArrayList()
     private lateinit var model: ConversationsListViewModel
 
-    // @TODO: Make this a singleton
+    // @TODO: Make this a singleton?
 
     @TargetApi(Build.VERSION_CODES.P)
     fun registerShortcuts() {
@@ -54,41 +54,21 @@ class ShortcutService constructor(
         openNewConversationIntent.action = BundleKeys.KEY_NEW_CONVERSATION
         openNewConversationIntent.putExtra ("new", true)
 
-        // Add a default shortcut to send a new conversation intent
-        /*val newConversationShortcut = ShortcutInfo.Builder(context, "new")
-                // @TODO: I18n
-                .setShortLabel("New")
-                .setLongLabel("New conversation")
-                .setIcon(Icon.createWithResource(context, R.drawable.ic_add_grey600_24px))
-                .setIntent(openNewConversationIntent)
-                .build()*/
-
         // Subscribe to updates of model attribute `conversationLiveData`
         model = ViewModelProvider(activity, activity.factory).get(ConversationsListViewModel::class.java)
         model.apply {
             conversationsLiveData.observe(activity, Observer {
                 val sortedConversationsList = it.toMutableList()
 
-                // shortcuts = shortcutManager.dynamicShortcuts
                 shortcuts = ArrayList()
 
-                /*if(shortcuts.size > 0) {
-                    shortcuts[0] = ShortcutInfo.Builder(context, "new")
-                            // @TODO: I18n
-                            .setShortLabel("New")
-                            .setLongLabel("New conversation")
-                            .setIcon(Icon.createWithResource(context, R.drawable.ic_add_grey600_24px))
-                            .setIntent(openNewConversationIntent)
-                            .build()
-                } else {*/
-                    shortcuts.add(ShortcutInfo.Builder(context, "new")
-                            // @TODO: I18n
-                            .setShortLabel("New")
-                            .setLongLabel("New conversation")
-                            .setIcon(Icon.createWithResource(context, R.drawable.ic_add_grey600_24px))
-                            .setIntent(openNewConversationIntent)
-                            .build())
-                //}
+                shortcuts.add(ShortcutInfo.Builder(context, "new")
+                        // @TODO: I18n
+                        .setShortLabel("New")
+                        .setLongLabel("New conversation")
+                        .setIcon(Icon.createWithResource(context, R.drawable.ic_add_grey600_24px))
+                        .setIntent(openNewConversationIntent)
+                        .build())
 
                 sortedConversationsList.sortWith(Comparator { conversation1, conversation2 ->
                     CompareToBuilder()
@@ -97,42 +77,28 @@ class ShortcutService constructor(
                             .toComparison()
                 })
 
-                Log.d("ShortcutService", sortedConversationsList.toString())
-
                 // Add shortcut to latest 3 conversations
                 for ((index, conversation) in sortedConversationsList.withIndex()) {
                     // Only do this for the first 3 conversations
                     if (index > 1) continue
 
+                    val intent = Intent(context, MainActivity::class.java)
+                    intent.action = BundleKeys.KEY_NEW_CONVERSATION
+                    intent.putExtra(BundleKeys.KEY_ROOM_TOKEN, conversation.token)
+                    intent.putExtra(BundleKeys.KEY_ROOM_ID, conversation.conversationId)
+                    intent.putExtra ("conversation", true)
+
                     // If shortcut does not exist, create it
-                    Log.d("ShortcutService", shortcutManager.dynamicShortcuts.size.toString() + "/" + index.toString())
-                    // if(shortcuts.size < index + 2) {
-                        shortcuts.add(ShortcutInfo.Builder(context, "current_conversation_" + (index + 1))
-                                .setShortLabel(conversation.displayName as String)
-                                .setLongLabel(conversation.displayName as String)
-                                // @TODO: Use avatar as icon
-                                .setIcon(Icon.createWithResource(context, R.drawable.ic_add_grey600_24px))
-                                // @TODO: Create intent to open conversation
-                                .setIntent(openNewConversationIntent)
-                                .build())
-                    /*} else {
-                        // Shortcut exists, update it
-                        var existingShortcut = shortcutManager.dynamicShortcuts[index + 1]
-                        shortcuts[index + 1] = ShortcutInfo.Builder(context, existingShortcut.id)
-                                .setShortLabel(conversation.displayName as String)
-                                .setLongLabel(conversation.displayName as String)
-                                // @TODO: Use avatar as icon
-                                .setIcon(Icon.createWithResource(context, R.drawable.ic_add_grey600_24px))
-                                // @TODO: Create intent to open conversation
-                                .setIntent(openNewConversationIntent)
-                                .build()
-                    }*/
-                    Log.d("ShortcutService", conversation.toString())
+                    shortcuts.add(ShortcutInfo.Builder(context, "current_conversation_" + (index + 1))
+                            .setShortLabel(conversation.displayName as String)
+                            .setLongLabel(conversation.displayName as String)
+                            // @TODO: Use avatar as icon
+                            .setIcon(Icon.createWithResource(context, R.drawable.ic_add_grey600_24px))
+                            // @TODO: Create intent to open conversation
+                            .setIntent(intent)
+                            .build())
                 }
 
-                // shortcutManager!!.dynamicShortcuts.clear()
-                // Only use first 3 items, even if there is maybe some old trash in the list
-                // shortcutManager!!.dynamicShortcuts = shortcuts.slice(IntRange(0,3))
                 shortcutManager!!.dynamicShortcuts = shortcuts
             })
         }

@@ -38,10 +38,7 @@ import com.bluelinelabs.conductor.changehandler.VerticalChangeHandler
 import com.google.android.material.appbar.MaterialToolbar
 import com.nextcloud.talk.R
 import com.nextcloud.talk.application.NextcloudTalkApplication
-import com.nextcloud.talk.controllers.CallNotificationController
-import com.nextcloud.talk.controllers.ContactsController
-import com.nextcloud.talk.controllers.LockedController
-import com.nextcloud.talk.controllers.ServerSelectionController
+import com.nextcloud.talk.controllers.*
 import com.nextcloud.talk.controllers.base.providers.ActionBarProvider
 import com.nextcloud.talk.newarch.features.conversationsList.ConversationsListView
 import com.nextcloud.talk.utils.ConductorRemapping
@@ -125,8 +122,13 @@ class MainActivity : BaseActivity(), ActionBarProvider {
     }
 
     val startingIntent : Intent? = intent
-    if(startingIntent?.extras != null){
+    if(startingIntent?.extras != null && startingIntent?.getBooleanExtra ("new", false)){
       openNewConversationScreen()
+    } else if(startingIntent?.extras != null && startingIntent?.getBooleanExtra("conversation", false)){
+      openExistingConversationScreen(
+              startingIntent?.getStringExtra(BundleKeys.KEY_ROOM_ID),
+              startingIntent?.getStringExtra(BundleKeys.KEY_ROOM_TOKEN)
+      );
     }
   }
 
@@ -189,6 +191,20 @@ class MainActivity : BaseActivity(), ActionBarProvider {
 
     router?.pushController(
             RouterTransaction.with(ContactsController(bundle))
+                    .pushChangeHandler(HorizontalChangeHandler())
+                    .popChangeHandler(HorizontalChangeHandler())
+    )
+  }
+
+  private fun openExistingConversationScreen(conversationId: String, conversationToken: String) {
+    val bundle = Bundle()
+    //bundle.putParcelable(BundleKeys.KEY_USER_ENTITY, viewModel.currentUserLiveData.value)
+    bundle.putString(BundleKeys.KEY_ROOM_TOKEN, conversationToken)
+    bundle.putString(BundleKeys.KEY_ROOM_ID, conversationId)
+    //bundle.putParcelable(BundleKeys.KEY_ACTIVE_CONVERSATION, Parcels.wrap(conversation))
+
+    router?.pushController(
+            RouterTransaction.with(ChatController(bundle))
                     .pushChangeHandler(HorizontalChangeHandler())
                     .popChangeHandler(HorizontalChangeHandler())
     )
